@@ -8,10 +8,29 @@ import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.function.LongSupplier;
 
+/**
+ * Сравнивает время выполнения одинаковых серий операций на своих структурах и структурах JDK.
+ */
 public class Benchmarks {
     private static final int WARMUP = 8;
     private static final int RUNS = 16;
+    private static final int SEED = 33;
+    private static final int CHECKSUM_FACTOR = 31;
+    private static final double NANOS_PER_MILLISECOND = 1_000_000;
+    private static final String[] NAMES = {
+        "PriorityQueueCustom (min)", "java.util.PriorityQueue (min)",
+        "PriorityQueueCustom (max)", "java.util.PriorityQueue (max)",
+        "HashMapCustom", "java.util.HashMap"
+    };
 
+    private Benchmarks() {
+    }
+
+    /**
+     * Запускает сравнение на трёх размерах входа и выводит строки таблицы.
+     *
+     * @param args аргументы командной строки, не используются
+     */
     public static void main(String[] args) {
         for (int n : new int[]{10_000, 50_000, 100_000}) {
             Integer[] data = makeData(n);
@@ -29,7 +48,7 @@ public class Benchmarks {
     }
 
     private static Integer[] makeData(int n) {
-        Random random = new Random(33);
+        Random random = new Random(SEED);
         HashSet<Integer> seen = new HashSet<>();
         Integer[] data = new Integer[n];
         int i = 0;
@@ -43,26 +62,18 @@ public class Benchmarks {
     }
 
     private static void measure(int n, LongSupplier[] cases) {
-        String[] names = {
-            "PriorityQueueCustom (min)", "java.util.PriorityQueue (min)",
-            "PriorityQueueCustom (max)", "java.util.PriorityQueue (max)",
-            "HashMapCustom", "java.util.HashMap"
-        };
-        long[] expected = new long[cases.length];
+        long[] expected = referenceResults(cases);
         double[] times = new double[cases.length];
 
-        for (int i = 0; i < cases.length; i += 2) {
-            expected[i] = cases[i + 1].getAsLong();
-            expected[i + 1] = expected[i];
-        }
         for (int run = 0; run < WARMUP + RUNS; run++) {
+            // Сдвигаем порядок вариантов, чтобы один и тот же вариант не запускался первым.
             for (int step = 0; step < cases.length; step++) {
                 int i = (run + step) % cases.length;
                 long start = System.nanoTime();
                 long result = cases[i].getAsLong();
                 long elapsed = System.nanoTime() - start;
                 if (result != expected[i]) {
-                    throw new IllegalStateException(names[i]);
+                    throw new IllegalStateException(NAMES[i]);
                 }
                 if (run >= WARMUP) {
                     times[i] += elapsed;
@@ -70,10 +81,19 @@ public class Benchmarks {
             }
         }
         for (int i = 0; i < cases.length; i++) {
-            String operation = i < 4 ? "add + poll" : "put + get + remove";
+            String operation = i < cases.length - 2 ? "add + poll" : "put + get + remove";
             System.out.printf(Locale.ROOT, "| %s | %s | %,d | %.3f |%n",
-                    names[i], operation, n, times[i] / RUNS / 1_000_000);
+                    NAMES[i], operation, n, times[i] / RUNS / NANOS_PER_MILLISECOND);
         }
+    }
+
+    private static long[] referenceResults(LongSupplier[] cases) {
+        long[] expected = new long[cases.length];
+        for (int i = 0; i < cases.length; i += 2) {
+            expected[i] = cases[i + 1].getAsLong();
+            expected[i + 1] = expected[i];
+        }
+        return expected;
     }
 
     private static long customQueue(Integer[] data, Comparator<Integer> comparator) {
@@ -83,7 +103,7 @@ public class Benchmarks {
         }
         long sum = 0;
         while (!queue.isEmpty()) {
-            sum = sum * 31 + queue.poll();
+            sum = sum * CHECKSUM_FACTOR + queue.poll();
         }
         return sum;
     }
@@ -95,7 +115,7 @@ public class Benchmarks {
         }
         long sum = 0;
         while (!queue.isEmpty()) {
-            sum = sum * 31 + queue.poll();
+            sum = sum * CHECKSUM_FACTOR + queue.poll();
         }
         return sum;
     }

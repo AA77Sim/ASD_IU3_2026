@@ -1,14 +1,17 @@
 package ru.bmstu.lab02;
 
-import java.util.HashMap;
-import java.util.Random;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.HashMap;
+import java.util.Random;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Проверяет операции с ключами, коллизии и сохранность записей при перехешировании.
+ */
 class HashMapCustomTest {
     @Test
     void shouldStartEmpty() {

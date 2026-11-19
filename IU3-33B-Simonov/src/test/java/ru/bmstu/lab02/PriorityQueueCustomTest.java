@@ -1,17 +1,20 @@
 package ru.bmstu.lab02;
 
-import java.util.Comparator;
-import java.util.NoSuchElementException;
-import java.util.PriorityQueue;
-import java.util.Random;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Comparator;
+import java.util.NoSuchElementException;
+import java.util.PriorityQueue;
+import java.util.Random;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Проверяет порядок извлечения, работу компаратора и граничные случаи очереди.
+ */
 class PriorityQueueCustomTest {
     @Test
     void shouldStartEmpty() {

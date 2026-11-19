@@ -11,32 +11,24 @@ Apple M4 Pro, OpenJDK 25.0.4.1, JVM с `-Xms512m -Xmx512m`.
 
 | Структура | Операция | N элементов | Среднее время, мс |
 |---|---|---:|---:|
-| PriorityQueueCustom (min) | add + poll | 10 000 | 0,859 |
-| java.util.PriorityQueue (min) | add + poll | 10 000 | 0,799 |
-| PriorityQueueCustom (max) | add + poll | 10 000 | 0,860 |
-| java.util.PriorityQueue (max) | add + poll | 10 000 | 0,814 |
-| HashMapCustom | put + get + remove | 10 000 | 0,523 |
-| java.util.HashMap | put + get + remove | 10 000 | 0,306 |
-| PriorityQueueCustom (min) | add + poll | 50 000 | 5,545 |
-| java.util.PriorityQueue (min) | add + poll | 50 000 | 5,069 |
-| PriorityQueueCustom (max) | add + poll | 50 000 | 5,499 |
-| java.util.PriorityQueue (max) | add + poll | 50 000 | 5,272 |
-| HashMapCustom | put + get + remove | 50 000 | 2,902 |
-| java.util.HashMap | put + get + remove | 50 000 | 2,069 |
-| PriorityQueueCustom (min) | add + poll | 100 000 | 13,942 |
-| java.util.PriorityQueue (min) | add + poll | 100 000 | 12,745 |
-| PriorityQueueCustom (max) | add + poll | 100 000 | 13,237 |
-| java.util.PriorityQueue (max) | add + poll | 100 000 | 12,389 |
-| HashMapCustom | put + get + remove | 100 000 | 6,002 |
-| java.util.HashMap | put + get + remove | 100 000 | 5,218 |
-
-На 100 000 элементов min-heap и max-heap показали близкое время: 13,942 и 13,237 мс.
-У них одинаковая асимптотика, а порядок входа меняет число просеиваний и сравнений,
-поэтому небольшая разница в этом замере не означает, что один режим всегда быстрее.
-Стандартная хеш-таблица была быстрее на всех трёх размерах, а в собственной таблице
-коллизии требуют последовательных проб.
-Собственная таблица выделяет два массива и не создаёт объект узла на запись, у стандартной
-таблицы есть массив корзин и объекты узлов. Фактическое потребление памяти не измерялось.
+| PriorityQueueCustom (min) | add + poll | 10 000 | 0,827 |
+| java.util.PriorityQueue (min) | add + poll | 10 000 | 0,761 |
+| PriorityQueueCustom (max) | add + poll | 10 000 | 0,829 |
+| java.util.PriorityQueue (max) | add + poll | 10 000 | 0,866 |
+| HashMapCustom | put + get + remove | 10 000 | 0,513 |
+| java.util.HashMap | put + get + remove | 10 000 | 0,316 |
+| PriorityQueueCustom (min) | add + poll | 50 000 | 5,251 |
+| java.util.PriorityQueue (min) | add + poll | 50 000 | 4,862 |
+| PriorityQueueCustom (max) | add + poll | 50 000 | 5,227 |
+| java.util.PriorityQueue (max) | add + poll | 50 000 | 5,441 |
+| HashMapCustom | put + get + remove | 50 000 | 2,795 |
+| java.util.HashMap | put + get + remove | 50 000 | 2,032 |
+| PriorityQueueCustom (min) | add + poll | 100 000 | 13,587 |
+| java.util.PriorityQueue (min) | add + poll | 100 000 | 12,055 |
+| PriorityQueueCustom (max) | add + poll | 100 000 | 12,358 |
+| java.util.PriorityQueue (max) | add + poll | 100 000 | 12,574 |
+| HashMapCustom | put + get + remove | 100 000 | 5,892 |
+| java.util.HashMap | put + get + remove | 100 000 | 5,332 |
 
 Из корня проекта:
 
@@ -44,3 +36,13 @@ Apple M4 Pro, OpenJDK 25.0.4.1, JVM с `-Xms512m -Xmx512m`.
 mvn -pl IU3-33B-Simonov -am test-compile
 java -Xms512m -Xmx512m -cp IU3-33B-Simonov/target/classes:IU3-33B-Simonov/target/test-classes ru.bmstu.lab02.Benchmarks
 ```
+
+## Вывод
+
+На одном наборе из 100 000 элементов min-heap и max-heap отработали за 13,587 и 12,358 мс соответственно.
+Асимптотика у них одинаковая, а число просеиваний и сравнений зависит от порядка значений, поэтому
+этот замер не показывает, что один режим всегда быстрее.
+Стандартная хеш-таблица прошла измеряемую серию быстрее на всех размерах, а в собственной
+при коллизиях приходится последовательно проверять ячейки.
+Собственная таблица хранит ключи и значения в двух массивах, а стандартная выделяет узлы для записей,
+но фактический расход памяти в этом замере не измерялся.
